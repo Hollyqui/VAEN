@@ -1,23 +1,37 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './App.scss';
+import Content from './components/Content';
+import Menu from './components/Menu';
 
 function App() {
+  const mockupNetwork = [
+    {
+    name: "hey",
+    trainable: true,
+    dtype: "real",
+    id: 1,
+    avg_weight: "G",
+    avg_abs_weight: "string"
+  },
+  {
+    name: "hey",
+    trainable: true,
+    dtype: "real",
+    id: 1,
+    avg_weight: "G",
+    avg_abs_weight: "string"
+  }
+]
+
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <Menu />
+
+        <Content 
+          networkOrigin={mockupNetwork}
+        />
       </header>
     </div>
   );
