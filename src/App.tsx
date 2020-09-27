@@ -9,7 +9,7 @@ function App() {
     name: "hey",
     trainable: true,
     dtype: "real",
-    id: 1,
+    id: 0,
     avg_weight: "G",
     avg_abs_weight: "string"
   },

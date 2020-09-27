@@ -14,7 +14,7 @@
 }
 
 .content-div{
-
+  width: 80%;
 }
 
 .menu-div{
@@ -24,4 +24,11 @@
 .layer-div {
   border: 1px;
   border-color: white;
+  
+}
+
+.inspectedLayer-div {
+  background-color: white;
+  width: 50px;
+  height: 50px;
 }
