@@ -2,7 +2,6 @@ import time
 import threading
 import thread_utils
 import VAEN_NN_Editor
-import VAEN_Data_Extractor
 import numpy as np
 import json
 
@@ -21,12 +20,16 @@ class VAEN():
         self.running = False
         self.active = False
 
-    @thread_utils.actor(daemon=False)
+    # @thread_utils.actor(daemon=False)
     def add_model(self, model, name):
         self.models[name] = model
 
     def set_update_frequency(self, seconds):
         self.update_frequency = seconds
+
+    def get_model(self, name):
+        return self.models[name]
+
 
     def get_models(self):
         '''Returns a dictionary of model names and objects used by VAEN'''
@@ -36,7 +39,7 @@ class VAEN():
         '''Returns a json readable list of model names used by VAEN'''
         return json.dumps(list(self.models.keys()))
 
-    @thread_utils.actor(daemon=False)
+    # @thread_utils.actor(daemon=False)
     def get_structure(self, model):
         ''' Returns information about the structure of a network for visualisation
         purposes.'''
@@ -49,14 +52,14 @@ class VAEN():
             network[-1]["avg_abs_weight"] = str(np.average(abs(model.get_weights()[i])))
         return json.dumps({"network": network})
 
-    @thread_utils.actor(daemon=False)
+    # @thread_utils.actor(daemon=False)
     def get_weights_json(self, model_name, layer_index):
         '''Returns a json formatted string containing the weights of the specified
         layer and model'''
         return json.dumps({"weights": self.models[model_name].get_weights()[layer_index].tolist()})
 
 
-    @thread_utils.actor(daemon=False)
+    # @thread_utils.actor(daemon=False)
     def get_all_weights(self, model_name):
         '''Returns a numpy array of all weights from a specified model'''
         return self.models[model_name].get_weights()
@@ -77,14 +80,3 @@ class VAEN():
         self.active = True
         print("test")
         self.updater()
-
-#
-# vaen = VAEN()
-# vaen.start()
-# vaen.stop()
-# vaen.active
-# vaen.running
-# vaen.set_update_frequency(0.1)
-#
-#
-# 2+2
