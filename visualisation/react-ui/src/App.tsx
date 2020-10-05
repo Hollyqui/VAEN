@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router, Switch } from 'react-router-dom';
 import './App.scss';
 import Content from './components/Content';
 import Menu from './components/Menu';
@@ -27,11 +28,17 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <Menu />
+        <Router>
 
-        <Content 
-          networkOrigin={mockupNetwork}
-        />
+          <Menu />
+
+          <Switch>
+            <Content 
+              networkOrigin={mockupNetwork}
+            />
+          </Switch>
+
+        </Router>
       </header>
     </div>
   );

@@ -1,34 +1,52 @@
 .App {
   text-align: center;
+
+  
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: white;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  font-size: calc(10px + 1vmin);
+  color: #282c34;
+
+  // border-left: 2px solid black;
+  // border-right: 2px solid black;
+  // width: 80%;
 }
 
 .content-div{
   width: 80%;
+  display: flex;
+  justify-content: center;
+}
+
+.network-div{
+  display: flex;
+  justify-content: center;
+}
+
+.link-div{
+  width: 20px;
+  background-color: yellow;
 }
 
 .menu-div{
-
+  width: 80%
 }
 
 .layer-div {
-  border: 1px;
-  border-color: white;
+  border: 3px solid #282c34;
+  // border-color: ;
   
 }
 
 .inspectedLayer-div {
-  background-color: white;
+  background-color: #282c34;
   width: 50px;
   height: 50px;
 }
