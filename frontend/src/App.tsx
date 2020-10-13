@@ -5,25 +5,6 @@ import Content from './components/Content';
 import Menu from './components/Menu';
 
 function App() {
-  const mockupNetwork = [
-    {
-    name: "hey",
-    trainable: true,
-    dtype: "real",
-    id: 0,
-    avg_weight: "G",
-    avg_abs_weight: "string"
-  },
-  {
-    name: "hey",
-    trainable: true,
-    dtype: "real",
-    id: 1,
-    avg_weight: "G",
-    avg_abs_weight: "string"
-  }
-]
-
 
   return (
     <div className="App">
@@ -33,9 +14,7 @@ function App() {
           <Menu />
 
           <Switch>
-            <Content 
-              networkOrigin={mockupNetwork}
-            />
+            <Content />
           </Switch>
 
         </Router>

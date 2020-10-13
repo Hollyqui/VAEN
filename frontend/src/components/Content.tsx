@@ -16,7 +16,7 @@ interface NetworkStructure{
     avg_abs_weight: string
 }
 
-function Content(props: {networkOrigin: NetworkStructure[]}){
+function Content(props: {}){
 
     return(
         <div className="content-div">
@@ -30,9 +30,7 @@ function Content(props: {networkOrigin: NetworkStructure[]}){
             </Route>
 
             <Route path="/network">
-                <Network 
-                    networkOrigin={props.networkOrigin}
-                />
+                <Network />
             </Route>
 
             <Route path="/training">

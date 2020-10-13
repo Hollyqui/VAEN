@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  // justify-content: center;
   font-size: calc(10px + 1vmin);
   color: #282c34;
 
@@ -22,27 +22,54 @@
 .content-div{
   width: 80%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-items: center;
 }
 
 .network-div{
   display: flex;
   justify-content: center;
+
+  // overflow-y: hidden;
+  // overflow-x: auto;
+  // // white-space: nowrap;
+
+  // padding-right: 120px;
+  // padding-left: 120px
+  // transform: rotate(-90deg);
+  // transform-origin: right top;
+}
+
+.network-div > div {
+
+  // transform: rotate(90deg);
+  // transform-origin: right bottom;
 }
 
 .link-div{
   width: 20px;
   background-color: yellow;
+  margin: 1px;
 }
 
 .menu-div{
-  width: 80%
+  width: 80%;
+
+  // sticky
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  
+
+  padding: 20px;
 }
 
 .layer-div {
   border: 3px solid #282c34;
   // border-color: ;
-  
+  margin: 1px;
+  width: 300px;
+  height: 400px;
 }
 
 .inspectedLayer-div {
