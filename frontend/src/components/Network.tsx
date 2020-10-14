@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Layer from './Layer'
 import Link from './Link'
 import io from 'socket.io-client'
@@ -26,9 +26,40 @@ function Network(props: {}) {
         }
     ]
     const [network, setNetwork] = useState(onLoad)
+    // const [socket, setSocket] = useState(io())
+    let socket = io()
 
-    let socket = io('http://localhost:6969/network_data')
-    socket.connect()
+    useEffect(() => {
+    
+        socket = io('http://localhost:6969/network_data')
+        
+        // getData()
+        console.log(socket)
+        
+        socket.emit('get_data')
+        socket.on('rec_data', async(data: any) => {
+            console.log(data)
+            setNetwork(data)
+    
+        })
+        
+
+        return function cleanup(){
+            socket.disconnect()
+        }
+        
+    }, [])
+    
+    function getData(){
+        socket.emit('get_data')
+        socket.on('rec_data', async(data: any) => {
+            console.log(data)
+            setNetwork(data)
+    
+        })
+        console.log(socket)
+    }
+
 
     function populateContents(ntw:NetworkStructure[]) {
         let contentsPopulated:any[] = []
@@ -55,18 +86,22 @@ function Network(props: {}) {
                     )
                 }
             }
-
-
         })
 
         return contentsPopulated
     }
 
     return(
-        <div className="network-div">
+        <div className="network-wrapper-div">
+        <button className='update-network-btn' onClick={getData}>
+            Load Network
+        </button>
+        <div className='network-div'>
             {
                 populateContents(network)
             }
+
+        </div>
             
         </div>
     )
