@@ -31,18 +31,8 @@ function Network(props: {}) {
 
     useEffect(() => {
     
-        socket = io('http://localhost:6969/network_data')
-        
-        // getData()
-        console.log(socket)
-        
-        socket.emit('get_data')
-        socket.on('rec_data', async(data: any) => {
-            console.log(data)
-            setNetwork(data)
-    
-        })
-        
+        socket = io('http://localhost:6969/network_data')        
+        getData()
 
         return function cleanup(){
             socket.disconnect()
@@ -53,11 +43,11 @@ function Network(props: {}) {
     function getData(){
         socket.emit('get_data')
         socket.on('rec_data', async(data: any) => {
-            console.log(data)
+            // console.log(data)
             setNetwork(data)
     
         })
-        console.log(socket)
+        // console.log(socket)
     }
 
 

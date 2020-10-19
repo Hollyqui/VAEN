@@ -29,27 +29,14 @@ async def index(request):
     with open('./build/index.html') as file:
         return web.Response(text=file.read(), content_type='text/html')
 
-# @sio.event
-# async def connect(sid, environ):
-#     print('coonected ', sid)
-
-# @sio.event
-# async def disconnect(sid):
-#     print('disconnected ', sid)
-    
-# @sio.event
-# async def message(sid, message):
-
-#     print('message by', sid)
-#     print(message)
-
 # NAMESPACES
 class GeneralNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ):
         # perform user authentication
         # self.emit('send-message', 'fuck you')
-
+        # print('this is environ', environ)
         print('user connected ', sid)
+        # print('this is self', self)
 
     async def on_disconnect(self, sid):
         # 
@@ -124,26 +111,9 @@ sio.register_namespace(ResultMetrics('/result-metrics_data'))
 #     username = autenthicate_user(environ)
 #     await sio.save_session(sid, {'user': username})
 
-# @sio.event
-# async def disconnect(sid, environ):
-#     print('disconnect', sid)
-
-# @sio.event
-# async def message(sid, data):
-#     session = await sio.get_session(sid)
-#     print('message from ', session['user'])
-
-# @sio.on('custom event')
-# async def custom_event(sid, data):
-#     pass
-
-# def autenthicate_user(user):
-#     pass
 
 app.router.add_get('/', index)
 app.router.add_static('/static', './build/static')
 
 if __name__ == '__main__':
     web.run_app(app, host='localhost', port=6969)
-
-# uvicorn.run(app, host='localhost', port=6969)
