@@ -367,119 +367,119 @@ class Network_Constructor:
             self.set_weights()
         self.save_weights()
         return self.compiled_model
-
-mnist_net.connected_layers["Input1"].name
-mnist_net.connected_inputs[0].name
-
-mnist_net.compiled_model.layers[0]._name
-
-
-# initialize network constructor
-network = Network_Constructor("Net3209")
-# create all layers
-inpu = Layer(layers.Input(shape=(160,),name="Input0"), "Input0", type="Input")
-inpu2 = Layer(layers.Input(shape=(142,123), name="Input1"), "Input1", type="Input")
-inpu3 = Layer(layers.Input(shape=(34,), name="Input2"), "Input2", type="Input")
-a = Layer(layers.Dense(units=69), "Layer1", type="Layer")
-b = Layer(layers.Dense(units=230), "Layer2", type="Layer")
-c = Layer(layers.LSTM(units=85), "Layer3", type="Layer")
-d = Layer(layers.Flatten(), "Layer4", type="Layer")
-e = Layer(layers.Dense(units=72, name="Test_layer5"), "Layer5", type="Layer")
-# e.tf_layer.input
-f = Layer(layers.Dense(units=159, name="Test_layer6"), "Layer6", type="Layer")
-output1 = Layer(layers.Dense(units=39, name="Test_Output"), "Output3", type = "Output")
-output2 = Layer(layers.Dense(units=100, name="Test_Output2"), "Output4", type = "Output")
-conc = Layer(layers.Concatenate(axis=-1, name='Conc5'), "Concatenate5", type="Layer")
-conc2 = Layer(layers.Concatenate(axis=-1, name='Conc6'), "Concatenate6", type="Layer")
-# add them to the network
-network.add_layers(inpu)
-network.add_layers([a,b,c,d,e,f,conc,conc2,output1,output2,inpu2,inpu3])
-# now specify inputs
-network.set_input("Input0","Layer2")
-network.set_input("Input1","Layer3")
-network.set_input("Input2","Layer1")
-network.set_input("Layer3","Layer4")
-network.set_input("Layer1","Concatenate5")
-network.set_input("Layer4","Concatenate5")
-network.set_input("Layer2","Concatenate5")
-network.set_input("Concatenate5","Concatenate6")
-network.set_input("Layer2","Concatenate6")
-network.set_input("Concatenate6","Layer5")
-network.set_input("Layer5","Layer6")
-network.set_input("Layer6","Output3")
-network.set_input("Concatenate5","Output4")
-
-# construct the network
-model = network.optimized_construct()
-network.connected_inputs
-network.layers["Layer1"].get_layer_info()
-
-# now check that everything is correct
-model.summary()
-plot_model(model, "multi_input_and_output_model.png", show_shapes=True)
-model.compile(optimizer="Adam", loss="mse", metrics=["mae", "acc"])
-
-# create another network constructor
-parsed_network = Network_Constructor("Net3399")
-# now read in a model (feel free to load any other model that you can
-# find online)
-parsed_network.parse_model(model)
-# now reconstruct the model
-parsed_model = parsed_network.optimized_construct()
-parsed_network.set_weights()
-
-
-
-
-# check if everything is correct
+#
+# mnist_net.connected_layers["Input1"].name
+# mnist_net.connected_inputs[0].name
+#
+# mnist_net.compiled_model.layers[0]._name
+#
+#
+# # initialize network constructor
+# network = Network_Constructor("Net3209")
+# # create all layers
+# inpu = Layer(layers.Input(shape=(160,),name="Input0"), "Input0", type="Input")
+# inpu2 = Layer(layers.Input(shape=(142,123), name="Input1"), "Input1", type="Input")
+# inpu3 = Layer(layers.Input(shape=(34,), name="Input2"), "Input2", type="Input")
+# a = Layer(layers.Dense(units=69), "Layer1", type="Layer")
+# b = Layer(layers.Dense(units=230), "Layer2", type="Layer")
+# c = Layer(layers.LSTM(units=85), "Layer3", type="Layer")
+# d = Layer(layers.Flatten(), "Layer4", type="Layer")
+# e = Layer(layers.Dense(units=72, name="Test_layer5"), "Layer5", type="Layer")
+# # e.tf_layer.input
+# f = Layer(layers.Dense(units=159, name="Test_layer6"), "Layer6", type="Layer")
+# output1 = Layer(layers.Dense(units=39, name="Test_Output"), "Output3", type = "Output")
+# output2 = Layer(layers.Dense(units=100, name="Test_Output2"), "Output4", type = "Output")
+# conc = Layer(layers.Concatenate(axis=-1, name='Conc5'), "Concatenate5", type="Layer")
+# conc2 = Layer(layers.Concatenate(axis=-1, name='Conc6'), "Concatenate6", type="Layer")
+# # add them to the network
+# network.add_layers(inpu)
+# network.add_layers([a,b,c,d,e,f,conc,conc2,output1,output2,inpu2,inpu3])
+# # now specify inputs
+# network.set_input("Input0","Layer2")
+# network.set_input("Input1","Layer3")
+# network.set_input("Input2","Layer1")
+# network.set_input("Layer3","Layer4")
+# network.set_input("Layer1","Concatenate5")
+# network.set_input("Layer4","Concatenate5")
+# network.set_input("Layer2","Concatenate5")
+# network.set_input("Concatenate5","Concatenate6")
+# network.set_input("Layer2","Concatenate6")
+# network.set_input("Concatenate6","Layer5")
+# network.set_input("Layer5","Layer6")
+# network.set_input("Layer6","Output3")
+# network.set_input("Concatenate5","Output4")
+#
+# # construct the network
+# model = network.optimized_construct()
+# network.connected_inputs
+# network.layers["Layer1"].get_layer_info()
+#
+# # now check that everything is correct
+# model.summary()
+# plot_model(model, "multi_input_and_output_model.png", show_shapes=True)
+# model.compile(optimizer="Adam", loss="mse", metrics=["mae", "acc"])
+#
+# # create another network constructor
+# parsed_network = Network_Constructor("Net3399")
+# # now read in a model (feel free to load any other model that you can
+# # find online)
+# parsed_network.parse_model(model)
+# # now reconstruct the model
+# parsed_model = parsed_network.optimized_construct()
+# parsed_network.set_weights()
+#
+#
+#
+#
+# # check if everything is correct
+# # parsed_model.summary()
+# # plot_model(parsed_model, "multi_input_and_output_model.png", show_shapes=True)
+# # now let's remove some a layer from the newly constructed model
+# # first disconnect it (I'll make this process easier later)
+# # then remove the layer
+# parsed_network.remove_layer("Layer5")
+# parsed_network.layers["Input1"].out
+# # and connect everything back
+# parsed_network.set_input("Concatenate6", "Layer6")
+# # now let's remove another connection without removing a layer
+# # parsed_network.remove_input("Layer2","Concatenate5")
+#
+#
+#
+#
+# # check if everything is correct
+# parsed_network.layers["Layer6"].change_nodes(100)
+# parsed_model = parsed_network.optimized_construct()
 # parsed_model.summary()
 # plot_model(parsed_model, "multi_input_and_output_model.png", show_shapes=True)
-# now let's remove some a layer from the newly constructed model
-# first disconnect it (I'll make this process easier later)
-# then remove the layer
-parsed_network.remove_layer("Layer5")
-parsed_network.layers["Input1"].out
-# and connect everything back
-parsed_network.set_input("Concatenate6", "Layer6")
-# now let's remove another connection without removing a layer
-# parsed_network.remove_input("Layer2","Concatenate5")
-
-
-
-
-# check if everything is correct
-parsed_network.layers["Layer6"].change_nodes(100)
-parsed_model = parsed_network.optimized_construct()
-parsed_model.summary()
-plot_model(parsed_model, "multi_input_and_output_model.png", show_shapes=True)
-
-
-
-
-
-mnist_net = Network_Constructor("932053")
-mnist = tf.keras.datasets.mnist
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train, x_test = x_train / 255.0, x_test / 255.0
-mnist_layers = [
-    Layer(layers.Input(shape=(28*28,),name="Input1"), "Input1", type="Input"),
-    Layer(tf.keras.layers.Flatten(input_shape=(28, 28)),"Flatten2","Layer"),
-    Layer(tf.keras.layers.Dense(128, activation='relu'),"Dense3","Layer"),
-    Layer(tf.keras.layers.Dropout(0.2),"Dense4","Layer"),
-    Layer(tf.keras.layers.Dense(10),"Output5","Output"),
-]
-mnist_net.add_layers(mnist_layers)
-mnist_net.layers["Input1"].tf_layer
-mnist_net.set_input("Input1","Flatten2")
-mnist_net.set_input("Flatten2","Dense3")
-mnist_net.set_input("Dense3","Dense4")
-mnist_net.set_input("Dense4","Output5")
-mnist_net.layers["Input1"].name
-mnist_net.connected_inputs
-net = mnist_net.optimized_construct()
-loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-net.compile(optimizer='adam',
-              loss=loss_fn,
-              metrics=['accuracy'])
-net.fit(x_train, y_train, epochs=5)
-model.evaluate(x_test,  y_test, verbose=2)
+#
+#
+#
+#
+#
+# mnist_net = Network_Constructor("932053")
+# mnist = tf.keras.datasets.mnist
+# (x_train, y_train), (x_test, y_test) = mnist.load_data()
+# x_train, x_test = x_train / 255.0, x_test / 255.0
+# mnist_layers = [
+#     Layer(layers.Input(shape=(28*28,),name="Input1"), "Input1", type="Input"),
+#     Layer(tf.keras.layers.Flatten(input_shape=(28, 28)),"Flatten2","Layer"),
+#     Layer(tf.keras.layers.Dense(128, activation='relu'),"Dense3","Layer"),
+#     Layer(tf.keras.layers.Dropout(0.2),"Dense4","Layer"),
+#     Layer(tf.keras.layers.Dense(10),"Output5","Output"),
+# ]
+# mnist_net.add_layers(mnist_layers)
+# mnist_net.layers["Input1"].tf_layer
+# mnist_net.set_input("Input1","Flatten2")
+# mnist_net.set_input("Flatten2","Dense3")
+# mnist_net.set_input("Dense3","Dense4")
+# mnist_net.set_input("Dense4","Output5")
+# mnist_net.layers["Input1"].name
+# mnist_net.connected_inputs
+# net = mnist_net.optimized_construct()
+# loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+# net.compile(optimizer='adam',
+#               loss=loss_fn,
+#               metrics=['accuracy'])
+# net.fit(x_train, y_train, epochs=5)
+# net.evaluate(x_test,  y_test, verbose=2)
