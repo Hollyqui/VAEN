@@ -1,9 +1,13 @@
 #!/bin/bash
 
-python3 -m cprofilev -f constructor_profile_$(date +%Y-%m-%d_%H-%M-%S)
+if [ -f ${1} ]; then
+    python3 -m cprofilev -f constructor_profile_$(date +%Y-%m-%d_%H-%M-%S) ${1}
 
-if [ -z ${BROWSER} ]; then
-    firefox http://localhost:4000
+    if [ -z ${BROWSER} ]; then
+        firefox http://localhost:4000
+    else
+        ${BROWSER} http://localhost:4000
+    fi
 else
-    ${BROWSER} http://localhost:4000
+    echo "file '${1}' does not exist!"
 fi
