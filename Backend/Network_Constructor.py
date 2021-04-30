@@ -12,6 +12,7 @@ from keras.utils.vis_utils import plot_model
 import graphviz
 import os
 from collections import defaultdict
+# TODO I don't need this
 # os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz/bin'
 import datetime
 # tf.compat.v1.disable_eager_execution()
@@ -23,96 +24,128 @@ class Layer:
     def __init__(self, tf_layer, display_name, type, unique_id=None, position_id = None):
         """tf_layer should be a tf.keras layer, id needs to be a unique id
         and type is either 'Input, Layer or Output'."""
+
         self.tf_layer = tf_layer
-        if unique_id is None:
-            self.unique_id = str(tf_layer)[-20:-1].replace("x","y").replace(" ","X")
-        else:
-            self.unique_id = unique_id
-        if position_id is None:
-            self.position_id = str(time.time()+random.random())
-        else:
-            self.position_id = position_id
-        # self.tf_layer._name = self.position_id
+
+        # Changing unique_ids from hex numbers to something else so python does not complain
+        self.unique_id = str(tf_layer)[-20:-1].replace("x","y").replace(" ","X") if unique_id is None else unique_id
+
+        # randomizing position_id if not specified
+        self.position_id = str(time.time()+random.random()) if position_id is None else position_id
+
+
         self.display_name = display_name
         self.tf_layer._name = self.unique_id
         self.inp = {}
         self.out = {}
 
 
+        # Setting weights if they exist
+        # This fails if the tensorflow network has not been compiled yet
         try:
             self.weights = tf_layer.get_weights()
+
         except:
             self.weights = None
+
+
+        # Input | Output | Hidden Layer
         self.type = type
 
+
     def get_layer_info(self):
-        """Return Layer info"""
+
+        """Export layer info to JSON"""
+
         info = []
+
         if self.type=="Input":
             info.append({})
             info[-1]["shape"] = list(self.tf_layer.get_shape())
             info.append({})
+
         else:
+
             info.append(layers.serialize(self.tf_layer))
+
             try:
                 # if layer is initialized and has weights
                 info[-1]["avg_weight"] = str(np.average(self.tf_layer.get_weights()[0]))
                 info[-1]["avg_bias"] = str(np.average(self.tf_layer.get_weights()[1]))
                 info[-1]["avg_abs_weight"] = str(np.average(np.abs(self.tf_layer.get_weights()[0])))
                 info[-1]["avg_abs_bias"] = str(np.average(np.abs(self.tf_layer.get_weights()[1])))
+
             except:
                 # if layer is not initialized it won't have weights
                 info[-1]["avg_weight"] = 0
                 info[-1]["avg_bias"] = 0
                 info[-1]["avg_abs_weight"] = 0
                 info[-1]["avg_abs_bias"] = 0
+
             info.append({})
+
         info[-1]["id"] = self.position_id
         info[-1]["type"] = self.type
         info[-1]["Inputs"] = json.dumps(list(self.inp.keys()))
         info[-1]["Outputs"] = json.dumps(list(self.out.keys()))
+
         return info
 
+
+
     def save_weights(self, weights=None):
-        """Saves weights of a tf_layer to the Layer object"""
-        if weights is None:
-            self.weights = self.tf_layer.get_weights()
-        else:
-            self.weights = weights
+
+        # Saves weights of a tf_layer to the Layer object (if no weights are specified)
+        self.weights = self.tf_layer.get_weights() if weights is None else weights
+
+
 
     def set_weights(self, weights=None):
+
         """Sets the weight of the tf_layer to what is saved in the Layer object"""
+
         if weights is None:
             weights = self.weights
+
         self.tf_layer.set_weights(weights)
 
-    def set_input(self,layer):
-        """either pass a layer as input"""
+
+
+    # Specifies input for the given layer
+    def set_input(self, layer):
+
         self.inp[layer.position_id] = layer
 
-    def set_output(self,layer):
+
+    # Specifies output for the given layer
+    def set_output(self, layer):
         self.out[layer.position_id] = layer
 
-    def remove_input(self,position_id):
+
+    def remove_input(self, position_id):
         self.inp.pop(position_id)
 
-    def remove_output(self,position_id):
+
+    def remove_output(self, position_id):
         self.out.pop(position_id)
 
+
+
+    # Changes the number of nodes (keeping the weights)
     def change_nodes(self, new_nodes):
-        # rebuild layer with 5 less nodes
-        # new_nodes = len(self.weights[1])-number_of_nodes
 
         serialized = layers.serialize(self.tf_layer)
         serialized["config"]["units"] = new_nodes
         self.tf_layer = layers.deserialize(serialized)
+
         # load back old weights
         self.save_weights([self.weights[0][:,:new_nodes],
                    self.weights[1][:new_nodes]])
 
+
 class Network_Constructor:
     def __init__(self, network_id):
-        # self.graph = graph = tf.Graph.__init__()
+
         self.position_id = network_id
 
         self.inputs = []
@@ -134,37 +167,62 @@ class Network_Constructor:
         return json.dumps([layer.get_layer_info() for layer in list(self.layers.values())])
 
     def add_layers(self, layers):
+
         """Adds a Layer to the Network"""
+
+        # Prevents some of the renaming
         tf.keras.backend.clear_session()
+
         if isinstance(layers,list)==False:
             layers = [layers]
+
         for layer in layers:
+
             self.layers[layer.position_id] = layer
+
             if layer.type == "Input":
                 self.inputs.append(layer.position_id)
-            if layer.type == "Output":
+
+            elif layer.type == "Output":
                 self.outputs.append(layer)
+
+            else:
+                print("layer type is neither input nor output")
+
+
+    # dictionary of unique ids
     def create_unique_dict(self):
         for layer in self.layers.values():
             self.unique_layers[layer.unique_id].append(layer)
 
+
+    # removes vertex between 2 layers
     def remove_input(self, id1, id2):
         """Removes a connection between layers"""
+
         self.layers[id2].inp.pop(id1)
         self.layers[id1].out.pop(id2)
 
+
+    # adds a vertex between 2 layers
     def set_input(self, id1,id2):
         """Adds a connection between layers"""
+
         self.layers[id2].set_input(self.layers[id1])
         self.layers[id1].set_output(self.layers[id2])
+
 
     def remove_layer(self, position_id):
         """Please try never to use this until suuuper necessary for some reason,
         it's the epitome of inefficient"""
+
         self.layers.pop(position_id)
+
         for layer in self.layers.values():
+
             if position_id in layer.inp:
                 layer.inp.pop(position_id)
+
             elif position_id in layer.out.values():
                 layer.out.pop(position_id)
 
@@ -172,32 +230,42 @@ class Network_Constructor:
 
     def get_layer(self, position_id=None, unique_id=None):
         """Finds a layer by position_id/unique_id from a tensorflow model"""
-        try:
+
+        if position_id is not None:
             return [layer for layer in self.compiled_model.layers if layer.position_id == position_id][0]
-        except:
+
+        elif unique_id is not None:
             return [layer for layer in self.compiled_model.layers if layer.position_id == unique_id][0]
-        finally:
+
+        else:
             return None
 
-    def find_value(self, item,dict):
-        """Finds value in a dictionary and returns all the occurances. Second return values
+
+    def find_value(self, item, my_dict):
+        """Finds value in a dictionary and returns all the occurrence. Second return values
         returns True if at least one instance is found"""
-        occurances = []
-        for tuple in list(dict.items()):
+
+        occurrences = []
+
+        for tuple in list(my_dict.items()):
             if item in tuple[1]:
-                occurances.append(tuple)
-        return occurances, len(occurances)>0
+                occurrences.append(tuple)
+
+        return occurrences, len(occurrences)>0
 
 
     def save_weights(self):
         # iterate through layer ids
         for layer in list(self.layers.values()):
             tf_lay = self.get_layer(layer.name, self.compiled_model)
+
             if tf_lay is not None:
                 layer.save_weights(tf_lay.get_weights())
 
+
     def connect_layers(self):
-        """"""
+        """ Going through every input/output of every layer and putting them into a dictionary """
+
         self.connections_in = defaultdict(list)
         self.connections_out = defaultdict(list)
 
@@ -206,16 +274,13 @@ class Network_Constructor:
                 for key in list(layer.inp.keys()):
                     self.connections_in[layer.position_id].append(key)
 
-        for layer in self.layers.values():
             if len(layer.out)>=1:
                 for key in list(layer.out.keys()):
-                    # print(key)
                     if key not in list(self.connections_in.keys()):
-                        # print("key not in dict_in", key)
                         self.connections_out[layer.position_id].append(key)
 
 
-    def parse_model(self, model):
+    def parse_model(self, tf_model):
         """Reads in a tensorflow model"""
         # first clear all variables
         self.layers = {}
@@ -229,21 +294,29 @@ class Network_Constructor:
         unique_ids = []
         position_ids = []
         vaen_layers = {}
-        for idx, layer in enumerate(model.layers):
-            print(layer.name)
+
+
+        for idx, layer in enumerate(tf_model.layers):
+
+            print(f'[DEBUG] tf layer name: {layer.name}')
+
+            # Making sure name is unique because tf is weird
             if layer.name in position_ids:
                 layer._name = layer.name+str(idx)
+
             position_ids.append(layer._name)
-            # if str(layer) not in unique_ids:
-                # print(layer.name)
+
             vaen_layers[layer.name] = Layer(layer, unique_id=layer.name, position_id=layer.name, display_name = layer.name, type = "Layer")
             unique_ids.append(layer.name)
 
         # iterate through all layers of the tensorflow model
-        for layer in model.layers:
-            # disconnected_layer = layers.deserialize({'class_name': layer.__class__.__name__, 'config': layer.get_config()})
+        for layer in tf_model.layers:
+
             disconnected_layer = layers.deserialize(layers.serialize(layer))
+
             weights = layer.get_weights()
+
+
             # add the layer to the self.layers array
             layer_to_add = vaen_layers[layer.name]
             self.layers[vaen_layers[layer.name].position_id] = layer_to_add
@@ -254,8 +327,10 @@ class Network_Constructor:
 
             # if there is only a single or no input make it into a list of length 1
             # so it's iterable
+            # NOTE inbound_nodes[0].inbound_layers is the input of the (current) layer
             if isinstance(layer._inbound_nodes[0].inbound_layers,list):
                 input_layer = layer._inbound_nodes[0].inbound_layers
+
             else:
                 input_layer = [layer._inbound_nodes[0].inbound_layers]
 
@@ -264,40 +339,48 @@ class Network_Constructor:
             if len(input_layer)<1:
                 self.layers[layer_to_add.position_id] = Layer(layer.input, position_id=layer.name, display_name = layer.name, type = "Input")
                 self.inputs.append(layer.name)
+
+
             # if layer.position_id not in self.layers:
             # Otherwise we iterate though the inputs and set them accordingly
             for input in input_layer:
+                # NOTE setting vertices
                 self.set_input(input.name,layer.name)
-                # print(layer.position_id,"gets input from",input.position_id)
+                #  print(layer.position_id,"gets input from",input.position_id)
             self.create_unique_dict()
 
         self.connect_layers()
+
+        # Check if layer is an output layer
         for layer in self.layers:
             if layer not in list(self.connections_out.keys()):
                 _, in_conv = self.find_value(layer,self.connections_in)
                 if not in_conv:
                     self.layers[layer].type = "Output"
                     self.outputs.append(self.layers[layer])
-    # computer_vision_net.connect_layers()
-    # parse_model(computer_vision_net,mobile)
-    # for l in computer_vision_net.layers.values():
-    #     print(l.type)
+
 
 
     def parse_connections(self):
         """Creates an array containing all layer(i+1) --> layer(i) connections"""
+
         self.connections = defaultdict(list)
+
         for layer in self.layers.keys():
             connects_from = list(self.layers[layer].inp.keys())
             if len(connects_from) > 0:
                 self.connections[layer] = connects_from
+
         return self.connections
+
 
     def get_connections_of_output(self,out):
         """Creates a nested dictionary that stores all connections - this is
         later used to find out in which order the connections have to be called"""
+
         # creates dictionary to store the correct order
         order = defaultdict(list)
+
         # if the output layer has a connection (everything up to input)
         if out in list(self.connections.keys()):
             # for all connections that layer has
@@ -308,25 +391,33 @@ class Network_Constructor:
                 if temp is not None:
                     # print(layer, temp[layer])
                     order[layer].append(temp)
+
             return order
+
 
     def get_all_connections(self):
         """Gets a nested dictionary of all connections - will be used to reconstruct
         the correct connection order"""
+
         ordered_list = []
+
         for output in self.outputs:
             print(output, self.get_connections_of_output(output.position_id))
             ordered_list.append(self.get_connections_of_output(output.position_id))
+
         return ordered_list
+
 
     def get_order(self, start, nested, connections_reverse):
         """Finds in which order connections need to be established to create the
         tensorflow model - this only looks at a single output"""
+
         if isinstance(nested,defaultdict):
             all_inputs = list(nested.keys())
             if len(all_inputs)==1:
                 if [nested[all_inputs[0]],start] not in connections_reverse:
                     connections_reverse.append([nested[all_inputs[0]],start])
+
             inputs = [input for input in all_inputs if input is not start]
             all_inputs = [input for input in all_inputs]
 
@@ -335,24 +426,29 @@ class Network_Constructor:
                     if [inputs,start] not in connections_reverse:
                         connections_reverse.append([inputs,start])
                 self.get_order(input,nested[input][0],connections_reverse)
+
         return connections_reverse
 
     def get_connections_in_order(self):
         """Gets all (from all outputs) connections needed to create the tensorflow
         model in correct order"""
+
         self.parse_connections()
         ordered_list = self.get_all_connections()
         connections = []
         connections_inverse = []
         connections_output = []
+
         for idx, output in enumerate(self.outputs):
             connections_output.append([])
             connection = self.get_order(output.position_id,ordered_list[idx],connections_inverse)
+
             for con in connection:
                 if con not in connections:
                     connections.append(con)
                     connections_output[-1].append(con)
             connections_output[-1].reverse()
+
         return connections_output
 
     def reset_layers(self):
@@ -362,6 +458,7 @@ class Network_Constructor:
             else:
                 self.layers[layer].tf_layer._name = self.layers[layer].position_id
 
+
     def set_weights(self):
         for layer in self.compiled_model.layers:
             try:
@@ -369,44 +466,53 @@ class Network_Constructor:
             except:
                 print("Weight loading not possible for layer",layer.name)
 
+
     def save_weights(self):
         for layer in self.compiled_model.layers:
             for layer_instance in self.unique_layers[layer.name]:
                 layer_instance.save_weights(layer.get_weights())
 
+
     def change_nodes(self, layer_name, number_of_nodes):
         self.layers[layer_name].change_nodes(number_of_nodes)
         self.compile()
 
+
+
     def compile(self, load_weights=True):
         """Constructs the tensorflow model"""
+
         self.connected_layers = {}
         self.connected_inputs = []
         self.connected_outputs = []
         self.reset_layers()
 
         cons = self.get_connections_in_order()
+
         for outputs in cons:
             for connections in outputs:
                 output = connections[1]
 
-                for input in connections[0]:
-                    if self.layers[input].type == "Input":
-                        self.connected_layers[input] = self.layers[input].tf_layer
-                        self.connected_inputs.append(self.connected_layers[input])
+                for my_input in connections[0]:
+                    if self.layers[my_input].type == "Input":
+                        self.connected_layers[my_input] = self.layers[my_input].tf_layer
+                        self.connected_inputs.append(self.connected_layers[my_input])
+
                 # check if it's a concatenation
                 if len(connections[0])>1:
-                    input_layers = [self.connected_layers[input] for input in connections[0]]
+                    input_layers = [self.connected_layers[my_input] for my_input in connections[0]]
                     self.connected_layers[output] = self.layers[output].tf_layer(input_layers)
 
                 else:
-                    input = connections[0][0]
+                    my_input = connections[0][0]
                     # self.connected_layers[input]._name = self.layers[input].position_id
                     # print(self.connected_layers[input].position_id,self.layers[input].position_id,input)
                     # print(self.layers[output].tf_layer, self.connected_layers[input])
-                    self.connected_layers[output] = self.layers[output].tf_layer(self.connected_layers[input])
+                    self.connected_layers[output] = self.layers[output].tf_layer(self.connected_layers[my_input])
+
                 if self.layers[output].type == "Output":
                     self.connected_outputs.append(self.connected_layers[output])
+
         #### # DEBUG:
         # print(self.connected_inputs[0].position_id)
         # [print(l.name) for l in self.connected_layers.values()]
@@ -414,9 +520,12 @@ class Network_Constructor:
             inputs=self.connected_inputs,
             outputs=self.connected_outputs)
         self.create_unique_dict()
+
         if load_weights:
             self.set_weights()
+
         self.save_weights()
+
         return self.compiled_model
 
 # TODO:
